@@ -1,0 +1,90 @@
+#!/bin/bash
+
+file=response.json
+
+echo "Válassz opciót!"
+
+echo "Az opciók megjelenítésére ezt a parancsot használd:"
+echo "$0 -h"
+
+
+help(){
+cat << END
+
+Parancsok:
+$0 [opciók]
+
+
+Opciók:
+ -h	A help megnyitása.
+ -m	A mai dátum kiírása.
+ -o	Két általad megadott szám összehasonlítása.
+ -f	Fájl letöltése.
+ -a	Kiírja a Studio Ghibli filmeket.
+END
+}
+
+maidatum(){
+ma=$(date +%Y.%m.%d.%T)
+echo $ma
+}
+
+osszehasonlit(){
+echo -n "Kérek egy számot: "
+read a
+echo -n "Kérek egy másik számot: "
+read b
+
+if [ $a -gt $b ]
+then
+ echo "$a nagyobb mint $b."
+else
+ if [ $a -eq $b ]
+  then
+   echo "$a és $b egyenlőek egymással."
+ else
+  echo "$a kisebb mint $b."
+ fi
+fi
+
+}
+
+fajlletolt(){
+curl -H "Accept: application/json" https://ghibliapi.herokuapp.com/films -o $file
+echo "A fájl letöltése sikeres!"
+}
+
+anime(){
+if [ ! -f $file ]
+then
+ echo "A fájl nem létezik!"
+ echo "Kérlek előbb töltsd le a fájlt az $0 -f paranccsal!"
+else
+ cat $file | jq
+fi
+}
+
+while getopts :hofam PARAM
+do
+ case $PARAM in
+  h)
+   help
+   ;;
+  o)
+   osszehasonlit
+   ;;
+  f)
+   fajlletolt
+   ;;
+  a)
+   anime
+   ;;
+  m)
+   maidatum
+   ;;
+  *)
+   echo "Érvénytelen parancs"
+   echo "A -h parancs segítségével megnyithatod a help menüt."
+   ;;
+ esac
+done
